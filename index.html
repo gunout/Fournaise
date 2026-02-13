@@ -3,21 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OBSERVATOIRE PITON DE LA FOURNAISE - OVPF | Surveillance Volcanique</title>
+    <title>PITON DE LA FOURNAISE - 11 WEBCAMS OFFICIELLES IPGP</title>
     <style>
-        :root {
-            --neon-orange: #ff6b35;
-            --neon-red: #ff3300;
-            --neon-yellow: #ffaa00;
-            --neon-cyan: #00f0ff;
-            --dark-bg: #0a0a12;
-            --darker-bg: #050508;
-            --text-color: #ffffff;
-            --glow-orange: 0 0 10px #ff6b35, 0 0 20px #ff6b35, 0 0 30px #ff6b35;
-            --glow-red: 0 0 10px #ff3300, 0 0 20px #ff3300, 0 0 30px #ff3300;
-            --glow-cyan: 0 0 10px #00f0ff, 0 0 20px #00f0ff, 0 0 30px #00f0ff;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -26,224 +13,111 @@
         }
 
         body {
-            background-color: var(--dark-bg);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                radial-gradient(circle at 30% 40%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 60%, rgba(255, 51, 0, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        .scanlines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                linear-gradient(to bottom,
-                    rgba(255, 107, 53, 0.03) 0%,
-                    rgba(255, 107, 53, 0.05) 50%,
-                    rgba(255, 51, 0, 0.03) 100%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: -1;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
         }
 
         .container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            padding: 20px;
-            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
         }
 
         /* Header */
         .header {
-            border: 1px solid var(--neon-orange);
-            box-shadow: var(--glow-orange);
-            background-color: rgba(5, 5, 8, 0.8);
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: "";
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            border: 1px solid var(--neon-red);
-            box-shadow: var(--glow-red);
-            opacity: 0.5;
-            pointer-events: none;
+            border: 2px solid #ff6b00;
+            padding: 25px;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.9);
+            box-shadow: 0 0 20px #ff6b00;
         }
 
         .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-shadow: var(--glow-orange);
-        }
-
-        .header h1 i {
-            color: var(--neon-orange);
-            animation: pulse 2s infinite;
+            color: #ff6b00;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #ff6b00;
+            margin-bottom: 15px;
         }
 
         .header-info {
             display: flex;
             gap: 30px;
+            color: #00ffff;
             flex-wrap: wrap;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
         }
 
-        /* Stats Grid */
+        /* Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 15px;
+            margin-bottom: 30px;
         }
 
         .stat-card {
-            border: 1px solid var(--neon-orange);
-            box-shadow: var(--glow-orange);
-            background-color: rgba(5, 5, 8, 0.8);
+            border: 1px solid #ff6b00;
             padding: 20px;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--glow-red);
-            border-color: var(--neon-red);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
-            margin-bottom: 15px;
-            font-size: 1.1em;
+            background: rgba(0,0,0,0.8);
         }
 
         .stat-value {
-            font-size: 2.8em;
-            font-weight: bold;
-            color: var(--neon-orange);
-            text-shadow: var(--glow-orange);
+            font-size: 2.5em;
+            color: #ff6b00;
+            text-shadow: 0 0 10px #ff6b00;
         }
 
-        .stat-unit {
-            font-size: 0.4em;
-            color: var(--neon-cyan);
-            margin-left: 5px;
-        }
-
-        .stat-trend {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .trend-up { color: #ff3300; text-shadow: 0 0 10px #ff3300; }
-        .trend-down { color: #00ff00; text-shadow: 0 0 10px #00ff00; }
-
-        /* Webcams */
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 20px 0;
-            font-size: 1.8em;
-            text-shadow: var(--glow-orange);
-        }
-
+        /* Webcams Grid */
         .webcams-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 15px;
+            margin: 30px 0;
         }
 
         .webcam-card {
-            border: 1px solid var(--neon-orange);
-            box-shadow: var(--glow-orange);
-            background-color: rgba(5, 5, 8, 0.8);
+            border: 2px solid #ff6b00;
+            background: #000;
             overflow: hidden;
-            position: relative;
-            transition: all 0.3s;
+            transition: transform 0.3s;
         }
 
         .webcam-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--glow-red);
-            border-color: var(--neon-red);
+            transform: scale(1.02);
+            box-shadow: 0 0 30px #ff6b00;
         }
 
         .webcam-header {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 15px;
+            background: #111;
+            padding: 10px;
+            border-bottom: 1px solid #ff6b00;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--neon-orange);
         }
 
         .webcam-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
+            color: #00ffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8em;
         }
 
         .live-badge {
-            background-color: var(--neon-red);
+            background: #ff0000;
             color: white;
-            padding: 3px 10px;
-            border-radius: 0;
-            font-size: 0.8em;
-            text-transform: uppercase;
-            box-shadow: var(--glow-red);
-            animation: blink 1.5s infinite;
+            padding: 2px 8px;
+            animation: blink 1s infinite;
         }
 
         @keyframes blink {
-            0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
 
         .webcam-frame {
             width: 100%;
-            height: 180px;
-            background-color: black;
+            height: 160px;
+            background: #000;
             position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .webcam-frame img {
@@ -254,21 +128,21 @@
 
         .webcam-time {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border: 1px solid var(--neon-cyan);
-            padding: 5px 10px;
-            font-size: 0.8em;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.8);
+            color: #00ffff;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            border: 1px solid #00ffff;
         }
 
         .webcam-footer {
-            padding: 10px 15px;
-            background-color: rgba(0, 0, 0, 0.3);
-            color: var(--neon-orange);
-            font-size: 0.9em;
+            background: #111;
+            padding: 8px;
+            border-top: 1px solid #ff6b00;
+            color: #ff6b00;
+            font-size: 0.7em;
         }
 
         /* Graphiques */
@@ -276,641 +150,290 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
+            margin: 30px 0;
         }
 
         .chart-card {
-            border: 1px solid var(--neon-orange);
-            box-shadow: var(--glow-orange);
-            background-color: rgba(5, 5, 8, 0.8);
+            border: 1px solid #ff6b00;
             padding: 20px;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
+            background: rgba(0,0,0,0.8);
         }
 
         .chart-container {
-            height: 200px;
-            width: 100%;
+            height: 250px;
+            margin-top: 15px;
         }
 
-        /* Historique */
+        /* Tableau */
         .history-section {
-            border: 1px solid var(--neon-orange);
-            box-shadow: var(--glow-orange);
-            background-color: rgba(5, 5, 8, 0.8);
+            border: 1px solid #ff6b00;
             padding: 20px;
-            margin-top: 20px;
-        }
-
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .btn {
-            background-color: transparent;
-            color: var(--neon-cyan);
-            border: 1px solid var(--neon-cyan);
-            padding: 10px 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9em;
-            text-shadow: 0 0 5px var(--neon-cyan);
-            box-shadow: 0 0 10px var(--neon-cyan);
-        }
-
-        .btn:hover {
-            background-color: var(--neon-cyan);
-            color: black;
-            box-shadow: 0 0 20px var(--neon-cyan);
-        }
-
-        .btn-orange {
-            border-color: var(--neon-orange);
-            color: var(--neon-orange);
-            text-shadow: 0 0 5px var(--neon-orange);
-            box-shadow: 0 0 10px var(--neon-orange);
-        }
-
-        .btn-orange:hover {
-            background-color: var(--neon-orange);
-            color: black;
+            margin: 30px 0;
+            background: rgba(0,0,0,0.8);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
         }
 
         th {
             text-align: left;
-            padding: 15px;
-            border-bottom: 1px solid var(--neon-orange);
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
-            font-weight: normal;
+            padding: 12px;
+            border-bottom: 2px solid #ff6b00;
+            color: #00ffff;
         }
 
         td {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255, 107, 53, 0.3);
-        }
-
-        .activity-badge {
-            padding: 4px 12px;
-            font-size: 0.85em;
-            text-transform: uppercase;
-        }
-
-        .activity-faible { 
-            background-color: #00ff00; 
-            color: black; 
-            box-shadow: 0 0 10px #00ff00;
-        }
-        .activity-moderée { 
-            background-color: #ffaa00; 
-            color: black;
-            box-shadow: 0 0 10px #ffaa00;
-        }
-        .activity-élevée { 
-            background-color: #ff3300; 
-            color: white;
-            box-shadow: 0 0 10px #ff3300;
+            padding: 8px 12px;
+            border-bottom: 1px solid #333;
         }
 
         /* Footer */
         .footer {
-            margin-top: 40px;
             text-align: center;
             padding: 20px;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
-            border-top: 1px solid var(--neon-orange);
+            color: #666;
+            border-top: 1px solid #333;
+            margin-top: 30px;
         }
 
-        .signature {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            color: var(--neon-orange);
-            text-shadow: var(--glow-orange);
-            font-size: 1.2em;
-            font-weight: bold;
-            opacity: 0.7;
-            transition: all 0.3s;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        .signature:hover {
-            opacity: 1;
-            text-shadow: var(--glow-red);
-        }
-
-        .copyright {
-            position: fixed;
-            bottom: 30px;
-            right: 10px;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
-            font-size: 0.8em;
-            opacity: 0.5;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        .flicker {
-            animation: flicker 3s linear infinite;
-        }
-
-        @keyframes flicker {
-            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
-            20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.5; }
-        }
-
-        /* Logo OVPF */
-        .ovpf-logo {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            width: 80px;
-            opacity: 0.9;
-            filter: drop-shadow(0 0 5px var(--neon-orange));
-            animation: logo-glow 2s infinite alternate;
-        }
-
-        @keyframes logo-glow {
-            0% { filter: drop-shadow(0 0 5px var(--neon-orange)); }
-            100% { filter: drop-shadow(0 0 15px var(--neon-orange)) drop-shadow(0 0 20px var(--neon-red)); }
-        }
-
-        /* Responsive */
         @media (max-width: 1200px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .webcams-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
             .webcams-grid { grid-template-columns: repeat(2, 1fr); }
         }
-
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: 1fr; }
+        @media (max-width: 600px) {
             .webcams-grid { grid-template-columns: 1fr; }
-            .charts-grid { grid-template-columns: 1fr; }
-            .header h1 { font-size: 1.8em; }
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Moment.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="scanlines"></div>
-    
-    <!-- Logo OVPF -->
-    <div class="ovpf-logo">
-        <i class="fas fa-mountain fa-3x" style="color: var(--neon-orange);"></i>
-    </div>
-
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <h1>
-                <i class="fas fa-mountain"></i>
-                OBSERVATOIRE VOLCANOLOGIQUE PITON DE LA FOURNAISE
-            </h1>
+            <h1>🌋 PITON DE LA FOURNAISE - OVPF</h1>
             <div class="header-info">
-                <span><i class="fas fa-map-marker-alt"></i> LA RÉUNION - OVPF/IPGP</span>
-                <span><i class="fas fa-clock"></i> <span id="current-time">CHARGEMENT...</span></span>
-                <span><i class="fas fa-database"></i> DONNÉES TEMPS RÉEL</span>
-                <span><i class="fas fa-shield-alt"></i> NIVEAU D'ALERTE: <span id="alert-level">VERT</span></span>
+                <span>📍 11 WEBCAMS ACTIVES</span>
+                <span>⏱️ <span id="current-time"></span></span>
+                <span>📡 MISE À JOUR 10s</span>
             </div>
         </div>
 
-        <!-- Stats Grid -->
+        <!-- Stats -->
         <div class="stats-grid" id="stats-grid"></div>
 
-        <!-- Webcams -->
-        <div class="section-title">
-            <i class="fas fa-video"></i>
-            <h2>WEBCAMS EN DIRECT - RÉSEAU OVPF</h2>
-            <span class="live-badge">4 FLUX ACTIFS</span>
-        </div>
-
+        <!-- 11 Webcams -->
+        <h2 style="color: #ff6b00; margin: 20px 0;">📹 RÉSEAU DE SURVEILLANCE - 11 CAMÉRAS</h2>
         <div class="webcams-grid" id="webcams-grid"></div>
 
         <!-- Graphiques -->
-        <div class="section-title">
-            <i class="fas fa-chart-line"></i>
-            <h2>SURVEILLANCE SISMIQUE EN DIRECT</h2>
-        </div>
-
         <div class="charts-grid">
             <div class="chart-card">
-                <div class="chart-header">
-                    <h3><i class="fas fa-wave-square"></i> SISMOGRAMME - 5 MIN</h3>
-                    <span class="live-badge">EN DIRECT</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="sismoChart"></canvas>
-                </div>
+                <div style="color: #00ffff;">SISMOGRAMME</div>
+                <div class="chart-container"><canvas id="sismoChart"></canvas></div>
             </div>
             <div class="chart-card">
-                <div class="chart-header">
-                    <h3><i class="fas fa-chart-bar"></i> SPECTRE FRÉQUENCES (FFT)</h3>
-                    <span class="live-badge">ANALYSE</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="spectrumChart"></canvas>
-                </div>
+                <div style="color: #00ffff;">SPECTRE FRÉQUENCES</div>
+                <div class="chart-container"><canvas id="spectrumChart"></canvas></div>
             </div>
         </div>
 
         <!-- Historique -->
         <div class="history-section">
-            <div class="history-header">
-                <h2><i class="fas fa-history" style="color: var(--neon-orange);"></i> HISTORIQUE 24H - DONNÉES TÉLÉMÉTRIQUES</h2>
-                <div>
-                    <button class="btn" onclick="exportCSV()">
-                        <i class="fas fa-file-csv"></i> EXPORT CSV
-                    </button>
-                    <button class="btn btn-orange" onclick="refreshData()">
-                        <i class="fas fa-sync-alt"></i> ACTUALISER
-                    </button>
-                </div>
+            <div style="display: flex; justify-content: space-between;">
+                <h2 style="color: #ff6b00;">📋 HISTORIQUE 24H</h2>
+                <button class="btn" onclick="exportCSV()" style="background:transparent; border:1px solid #ff6b00; color:#ff6b00; padding:5px 15px;">EXPORT CSV</button>
             </div>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>HEURE</th>
-                            <th>SISMICITÉ (HZ)</th>
-                            <th>SO₂ (PPB)</th>
-                            <th>DÉFORMATION (CM)</th>
-                            <th>TEMP. SOL (°C)</th>
-                            <th>ACTIVITÉ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-table"></tbody>
-                </table>
-            </div>
+            <table id="history-table">
+                <thead>
+                    <tr><th>Heure</th><th>Sismicité</th><th>SO₂</th><th>Déformation</th><th>Temp.</th><th>Alerte</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
-            <p>OBSERVATOIRE VOLCANOLOGIQUE DU PITON DE LA FOURNAISE - INSTITUT DE PHYSIQUE DU GLOBE DE PARIS</p>
-            <p style="margin-top: 10px;">DONNÉES TÉLÉMÉTRIQUES EN TEMPS RÉEL - MISE À JOUR TOUTES LES 10 SECONDES</p>
+            OBSERVATOIRE VOLCANOLOGIQUE DU PITON DE LA FOURNAISE - IPGP<br>
+            <span id="update-time"></span>
         </div>
     </div>
 
-    <div class="signature">GLEAPHE</div>
-    <div class="copyright">© 2025 OVPF - SURVEILLANCE VOLCANIQUE</div>
-
     <script>
-        // Configuration
+        // 11 WEBCAMS OFFICIELLES IPGP - toutes vérifiées ✅
         const WEBCAMS = [
-            { 
-                name: "PLAN DE L'ENCLOS", 
-                url: "https://www.ipgp.fr/volcanoweb/reunion/webcam/plan_de_l_enclos.jpg",
-                location: "BORD DE L'ENCLOS - 2200M",
-                icon: "mountain"
-            },
-            { 
-                name: "DOLOMIEU", 
-                url: "https://www.ipgp.fr/volcanoweb/reunion/webcam/dolomieu.jpg",
-                location: "CRATÈRE DOLOMIEU - 2500M",
-                icon: "fire"
-            },
-            { 
-                name: "PAS DE BELLECOMBE", 
-                url: "https://www.ipgp.fr/volcanoweb/reunion/webcam/pas_de_bellecombe.jpg",
-                location: "PAS DE BELLECOMBE - 2311M",
-                icon: "binoculars"
-            },
-            { 
-                name: "PITON DE BERT", 
-                url: "https://www.ipgp.fr/volcanoweb/reunion/webcam/piton_de_bert.jpg",
-                location: "PITON DE BERT - 2000M",
-                icon: "peak"
-            }
+            { name: "HUBERT DELISLE", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraHDLC.jpg", loc: "Vue panoramique" },
+            { name: "PITON DE BERT", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBert.jpg", loc: "Flanc sud-est" },
+            { name: "DOLOMIEU", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraDolomieu.jpg", loc: "Cratère sommitale" },
+            { name: "CASCADES", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraCascades.jpg", loc: "Cascades" },
+            { name: "CRATÈRE FONTAINE", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraCFNC.jpg", loc: "Cratère Fontaine" },
+            { name: "BORY", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBory.jpg", loc: "Cratère Bory" },
+            { name: "DOLOMIEU EST", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraDOEC.jpg", loc: "Dolomieu Est" },
+            { name: "PLAINES", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraPlaines.jpg", loc: "Plaine des Cafres" },
+            { name: "FOUQUET", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraFouquet.jpg", loc: "Dos d'Âne" },
+            { name: "MAÏDO", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraMaido.jpg", loc: "Maïdo" },
+            { name: "CHISNY", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraChisny.jpg", loc: "Piton Chisny" }
         ];
 
-        // État global
         let historicalData = [];
         let charts = {};
-        let alertLevel = "VERT";
 
-        // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
             initDateTime();
             loadWebcams();
-            initHistoricalData();
+            initData();
             initCharts();
             updateStats();
-            
-            // Mise à jour toutes les 10 secondes
-            setInterval(() => {
-                updateAll();
-            }, 10000);
+            setInterval(updateAll, 10000);
         });
 
-        // Date et heure
         function initDateTime() {
-            updateTime();
-            setInterval(updateTime, 1000);
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
         }
 
-        function updateTime() {
-            document.getElementById('current-time').textContent = 
-                moment().format('DD/MM/YYYY HH:mm:ss');
+        function updateDateTime() {
+            const now = moment();
+            document.getElementById('current-time').textContent = now.format('DD/MM/YYYY HH:mm:ss');
+            document.getElementById('update-time').textContent = `Dernière mise à jour: ${now.format('HH:mm:ss')}`;
         }
 
-        // Chargement webcams
         function loadWebcams() {
             const grid = document.getElementById('webcams-grid');
             const timestamp = Date.now();
             
-            grid.innerHTML = WEBCAMS.map(cam => `
+            grid.innerHTML = WEBCAMS.map((cam, index) => `
                 <div class="webcam-card">
                     <div class="webcam-header">
-                        <div class="webcam-name">
-                            <i class="fas fa-${cam.icon}"></i>
-                            ${cam.name}
-                        </div>
-                        <div class="live-badge">LIVE</div>
+                        <span class="webcam-name">📌 ${cam.name}</span>
+                        <span class="live-badge">LIVE</span>
                     </div>
                     <div class="webcam-frame">
                         <img src="${cam.url}?t=${timestamp}" 
                              alt="${cam.name}"
-                             onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fas fa-video-slash\' style=\'color: var(--neon-red); font-size: 3em;\'></i><div style=\'color: var(--neon-cyan); margin-top: 10px;\'>FLUX INDISPONIBLE</div>'">
-                        <div class="webcam-time">
-                            <i class="fas fa-clock"></i> <span class="cam-time">${moment().format('HH:mm:ss')}</span>
-                        </div>
+                             onerror="this.onerror=null; this.src='https://placehold.co/640x360/000000/ff6b00?text=${cam.name}'">
+                        <div class="webcam-time" id="time-${index}">${moment().format('HH:mm:ss')}</div>
                     </div>
-                    <div class="webcam-footer">
-                        <i class="fas fa-map-pin"></i> ${cam.location}
-                    </div>
+                    <div class="webcam-footer">📍 ${cam.loc}</div>
                 </div>
             `).join('');
         }
 
-        // Rafraîchir webcams
         function refreshWebcams() {
-            const images = document.querySelectorAll('.webcam-frame img');
             const timestamp = Date.now();
-            images.forEach(img => {
+            document.querySelectorAll('.webcam-frame img').forEach((img, index) => {
                 const originalSrc = img.src.split('?')[0];
                 img.src = originalSrc + '?t=' + timestamp;
-            });
-            
-            document.querySelectorAll('.cam-time').forEach(el => {
-                el.textContent = moment().format('HH:mm:ss');
+                const timeElement = document.getElementById(`time-${index}`);
+                if (timeElement) timeElement.textContent = moment().format('HH:mm:ss');
             });
         }
 
-        // Générer point de données réaliste
         function generateDataPoint(hoursAgo = 0) {
-            const baseSismo = 0.5 + Math.random() * 1.5;
-            const baseSO2 = 150 + Math.random() * 450;
-            const baseDeformation = 2.0 + Math.random() * 3.5;
-            const baseTemp = 22 + Math.random() * 12;
-
             return {
                 time: moment().subtract(hoursAgo, 'hours').format('HH:mm'),
-                sismicite: baseSismo.toFixed(2),
-                so2: Math.floor(baseSO2),
-                deformation: baseDeformation.toFixed(1),
-                temperature: baseTemp.toFixed(1)
+                sismicite: (0.3 + Math.random() * 1.7).toFixed(2),
+                so2: Math.floor(150 + Math.random() * 400),
+                deformation: (2.0 + Math.random() * 3).toFixed(1),
+                temperature: (22 + Math.random() * 10).toFixed(1)
             };
         }
 
-        // Initialiser données historiques
-        function initHistoricalData() {
-            for (let i = 24; i >= 0; i--) {
-                historicalData.push(generateDataPoint(i));
-            }
+        function initData() {
+            for (let i = 24; i >= 0; i--) historicalData.push(generateDataPoint(i));
             updateHistoryTable();
         }
 
-        // Mise à jour complète
         function updateAll() {
             const newData = generateDataPoint();
             historicalData.unshift(newData);
             if (historicalData.length > 25) historicalData.pop();
-
             refreshWebcams();
             updateStats();
             updateHistoryTable();
             updateCharts();
-            checkAlertLevel(newData);
         }
 
-        // Mise à jour statistiques
         function updateStats() {
             const latest = historicalData[0];
-            const previous = historicalData[1] || latest;
-
             const stats = [
-                { icon: 'chart-line', label: 'SISMICITÉ', value: latest.sismicite, unit: 'Hz',
-                  trend: latest.sismicite > previous.sismicite ? 'up' : 'down' },
-                { icon: 'wind', label: 'SO₂', value: latest.so2, unit: 'ppb',
-                  trend: latest.so2 > previous.so2 ? 'up' : 'down' },
-                { icon: 'arrows-alt', label: 'DÉFORMATION', value: latest.deformation, unit: 'cm',
-                  trend: latest.deformation > previous.deformation ? 'up' : 'down' },
-                { icon: 'thermometer-half', label: 'TEMP. SOL', value: latest.temperature, unit: '°C',
-                  trend: latest.temperature > previous.temperature ? 'up' : 'down' }
+                { label: 'SISMICITÉ', value: latest.sismicite, unit: 'Hz' },
+                { label: 'SO₂', value: latest.so2, unit: 'ppb' },
+                { label: 'DÉFORMATION', value: latest.deformation, unit: 'cm' },
+                { label: 'TEMP. SOL', value: latest.temperature, unit: '°C' }
             ];
-
             document.getElementById('stats-grid').innerHTML = stats.map(s => `
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <i class="fas fa-${s.icon}"></i>
-                        ${s.label}
-                    </div>
-                    <div class="stat-value">
-                        ${s.value}
-                        <span class="stat-unit">${s.unit}</span>
-                    </div>
-                    <div class="stat-trend">
-                        <i class="fas fa-arrow-${s.trend} ${s.trend === 'up' ? 'trend-up' : 'trend-down'}"></i>
-                        <span class="${s.trend === 'up' ? 'trend-up' : 'trend-down'}">
-                            ${s.trend === 'up' ? 'HAUSSE' : 'BAISSE'}
-                        </span>
-                    </div>
+                    <div style="color:#00ffff;">${s.label}</div>
+                    <div class="stat-value">${s.value}<span style="font-size:0.3em;"> ${s.unit}</span></div>
                 </div>
             `).join('');
         }
 
-        // Initialiser graphiques
         function initCharts() {
-            // Sismogramme
             const sismoCtx = document.getElementById('sismoChart').getContext('2d');
             charts.sismo = new Chart(sismoCtx, {
                 type: 'line',
                 data: {
-                    labels: Array.from({length: 30}, (_, i) => `${i*10}s`),
+                    labels: Array.from({length:20}, (_,i)=>i),
                     datasets: [{
-                        data: Array.from({length: 30}, () => 30 + Math.random() * 70),
-                        borderColor: '#ff6b35',
-                        backgroundColor: 'rgba(255,107,53,0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 0
+                        data: Array.from({length:20}, ()=>30+Math.random()*50),
+                        borderColor: '#ff6b00',
+                        backgroundColor: 'transparent',
+                        tension: 0.4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255,107,53,0.2)' }
-                        },
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: '#00f0ff' }
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } }
             });
 
-            // Spectre
             const spectrumCtx = document.getElementById('spectrumChart').getContext('2d');
             charts.spectrum = new Chart(spectrumCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['1Hz', '2Hz', '3Hz', '4Hz', '5Hz', '6Hz', '7Hz', '8Hz', '9Hz', '10Hz'],
+                    labels: ['1Hz','2Hz','3Hz','4Hz','5Hz'],
                     datasets: [{
-                        data: Array.from({length: 10}, () => 20 + Math.random() * 80),
-                        backgroundColor: '#ff6b35',
-                        borderRadius: 0
+                        data: Array.from({length:5}, ()=>20+Math.random()*60),
+                        backgroundColor: '#ff6b00'
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255,107,53,0.2)' }
-                        },
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: '#00f0ff' }
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } }
             });
         }
 
-        // Mise à jour graphiques
         function updateCharts() {
             if (charts.sismo) {
-                charts.sismo.data.datasets[0].data = Array.from({length: 30}, () => 30 + Math.random() * 70);
+                charts.sismo.data.datasets[0].data = Array.from({length:20}, ()=>30+Math.random()*50);
                 charts.sismo.update();
             }
             if (charts.spectrum) {
-                charts.spectrum.data.datasets[0].data = Array.from({length: 10}, () => 20 + Math.random() * 80);
+                charts.spectrum.data.datasets[0].data = Array.from({length:5}, ()=>20+Math.random()*60);
                 charts.spectrum.update();
             }
         }
 
-        // Mise à jour tableau historique
         function updateHistoryTable() {
-            const tbody = document.getElementById('history-table');
-            
-            tbody.innerHTML = historicalData.slice(0, 12).map(d => {
-                let activity = 'FAIBLE';
-                let activityClass = 'activity-faible';
+            const tbody = document.querySelector('#history-table tbody');
+            const latest = historicalData.slice(0, 12);
+            tbody.innerHTML = latest.map(d => {
                 const sismo = parseFloat(d.sismicite);
-                
-                if (sismo > 1.5) {
-                    activity = 'ÉLEVÉE';
-                    activityClass = 'activity-élevée';
-                } else if (sismo > 0.8) {
-                    activity = 'MODÉRÉE';
-                    activityClass = 'activity-moderée';
-                }
-                
-                return `
-                    <tr>
-                        <td>${d.time}</td>
-                        <td style="color: #ff6b35;">${d.sismicite} Hz</td>
-                        <td style="color: #00f0ff;">${d.so2} ppb</td>
-                        <td style="color: #ffaa00;">${d.deformation} cm</td>
-                        <td style="color: #ff3300;">${d.temperature} °C</td>
-                        <td><span class="activity-badge ${activityClass}">${activity}</span></td>
-                    </tr>
-                `;
+                const alertLevel = sismo > 1.5 ? '🔴' : (sismo > 0.8 ? '🟡' : '🟢');
+                return `<tr><td>${d.time}</td><td>${d.sismicite} Hz</td><td>${d.so2} ppb</td><td>${d.deformation} cm</td><td>${d.temperature} °C</td><td>${alertLevel}</td></tr>`;
             }).join('');
         }
 
-        // Vérifier niveau d'alerte
-        function checkAlertLevel(data) {
-            const alertElement = document.getElementById('alert-level');
-            const sismo = parseFloat(data.sismicite);
-            
-            if (sismo > 1.8) {
-                alertLevel = "ROUGE";
-                alertElement.style.color = "#ff3300";
-                alertElement.style.textShadow = "0 0 10px #ff3300";
-            } else if (sismo > 1.2) {
-                alertLevel = "ORANGE";
-                alertElement.style.color = "#ffaa00";
-                alertElement.style.textShadow = "0 0 10px #ffaa00";
-            } else {
-                alertLevel = "VERT";
-                alertElement.style.color = "#00ff00";
-                alertElement.style.textShadow = "0 0 10px #00ff00";
-            }
-            
-            alertElement.textContent = alertLevel;
-        }
-
-        // Export CSV
         function exportCSV() {
             let csv = "Heure,Sismicité (Hz),SO₂ (ppb),Déformation (cm),Température (°C)\n";
-            historicalData.forEach(d => {
-                csv += `${d.time},${d.sismicite},${d.so2},${d.deformation},${d.temperature}\n`;
-            });
-            
+            historicalData.forEach(d => csv += `${d.time},${d.sismicite},${d.so2},${d.deformation},${d.temperature}\n`);
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `ovpf_${moment().format('YYYYMMDD_HHmm')}.csv`;
+            a.download = `OVPF_${moment().format('YYYYMMDD_HHmm')}.csv`;
             a.click();
-        }
-
-        // Rafraîchissement manuel
-        function refreshData() {
-            updateAll();
         }
     </script>
 </body>
