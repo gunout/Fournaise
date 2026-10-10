@@ -1,606 +1,1146 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PITON DE LA FOURNAISE - DONNÉES RÉELLES IPGP</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Courier New', monospace;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌋 OVPF — Piton de la Fournaise (2013-2026)</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌋</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Courier New',monospace; }
+  body { background:#0a0a0a; color:#00ff00; padding:20px; transition: background .3s, color .3s; }
+  .container { max-width:1800px; margin:0 auto; }
 
-        body {
-            background: #0a0a0a;
-            color: #00ff00;
-            padding: 20px;
-        }
+  header { border:2px solid #ff6b00; padding:20px; margin-bottom:25px; background:rgba(0,0,0,.9); box-shadow:0 0 20px #ff6b00; position:relative; transition: all .3s; }
+  h1 { color:#ff6b00; text-shadow:0 0 10px #ff6b00; margin-bottom:10px; font-size:2em; }
+  h2 { color:#ff6b00; margin:30px 0 15px; border-bottom:1px solid #333; padding-bottom:8px; font-size:1.3em; }
+  .header-info { display:flex; gap:25px; flex-wrap:wrap; color:#00ffff; font-size:.9em; }
 
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-        }
+  .webcams-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin:20px 0; }
+  .webcam-card { border:2px solid #ff6b00; background:#000; overflow:hidden; transition:transform .3s; }
+  .webcam-card:hover { transform:scale(1.02); box-shadow:0 0 30px #ff6b00; }
+  .webcam-header { background:#111; padding:10px 12px; border-bottom:1px solid #ff6b00; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .webcam-name { color:#00ffff; font-weight:bold; text-transform:uppercase; font-size:.8em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .live-badge { background:#ff0000; color:white; padding:2px 8px; font-size:.7em; animation:blink 1s infinite; }
+  @keyframes blink { 50% { opacity:.5; } }
+  .webcam-frame { width:100%; aspect-ratio:16/9; background:#000; position:relative; overflow:hidden; }
+  .webcam-frame img { width:100%; height:100%; object-fit:cover; display:block; }
+  .webcam-frame img.loading { opacity:.3; }
+  .webcam-time { position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,.8); color:#00ffff; padding:2px 8px; font-size:.7em; border:1px solid #00ffff; }
+  .webcam-footer { background:#111; padding:8px 12px; border-top:1px solid #ff6b00; color:#ff6b00; font-size:.7em; }
+  .error-overlay { position:absolute; inset:0; display:none; flex-direction:column; justify-content:center; align-items:center; background:#111; color:#ff6b00; font-size:.8em; text-align:center; }
+  .webcam-frame.has-error .error-overlay { display:flex; }
+  .webcam-frame.has-error img { display:none; }
+  .webcam-frame .fallback-link { color:#00ffff; text-decoration:underline; margin-top:8px; font-size:.85em; }
 
-        .header {
-            border: 2px solid #ff6b00;
-            padding: 25px;
-            margin-bottom: 30px;
-            background: rgba(0,0,0,0.9);
-            box-shadow: 0 0 20px #ff6b00;
-        }
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin:20px 0; }
+  .stat-card { border:1px solid #ff6b00; padding:20px; background:rgba(0,0,0,.8); transition: all .3s; }
+  .stat-value { font-size:2.5em; color:#ff6b00; text-shadow:0 0 10px #ff6b00; }
+  .stat-label { color:#00ffff; margin-bottom:10px; font-size:.85em; }
+  .stat-source { font-size:.7em; color:#666; margin-top:8px; }
 
-        .header h1 {
-            color: #ff6b00;
-            font-size: 2.5em;
-            text-shadow: 0 0 10px #ff6b00;
-            margin-bottom: 15px;
-        }
+  .charts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; margin:20px 0; }
+  .chart-card { border:1px solid #ff6b00; padding:20px; background:rgba(0,0,0,.8); transition: all .3s; }
+  .chart-card h3 { color:#00ffff; margin-bottom:15px; font-size:.95em; }
+  .chart-container { height:300px; position:relative; }
 
-        .header-info {
-            display: flex;
-            gap: 30px;
-            color: #00ffff;
-            flex-wrap: wrap;
-        }
+  .warning { border:1px solid #ff0000; padding:15px; margin:20px 0; background:rgba(255,0,0,.1); color:#ff6666; font-size:.85em; }
+  .info-box { border:1px solid #00ffff; padding:15px; margin:20px 0; background:rgba(0,255,255,.05); color:#00ffff; font-size:.85em; transition: all .3s; }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
+  .controls { display:flex; gap:15px; margin:15px 0; flex-wrap:wrap; align-items:center; }
+  .btn { background:transparent; border:1px solid #ff6b00; color:#ff6b00; padding:8px 16px; cursor:pointer; font-family:inherit; font-size:.85em; text-transform:uppercase; transition:all .2s; }
+  .btn:hover, .btn.active { background:#ff6b00; color:#000; }
+  .refresh-info { margin-left:auto; color:#00ffff; font-size:.85em; }
+  .countdown { color:#ff6b00; font-weight:bold; }
 
-        .stat-card {
-            border: 1px solid #ff6b00;
-            padding: 20px;
-            background: rgba(0,0,0,0.8);
-            transition: all 0.3s;
-        }
+  #map-epicenters { height:600px; border:2px solid #ff6b00; margin:20px 0; background:#0a0a0a; position:relative; z-index:1; }
 
-        .stat-card:hover {
-            box-shadow: 0 0 20px #ff6b00;
-        }
+  .year-filter { border:1px solid #ff6b00; padding:12px 18px; background:rgba(0,0,0,.8); margin:15px 0; transition: all .3s; }
+  .year-filter label { color:#00ffff; font-size:.9em; white-space:nowrap; }
+  .year-filter input[type="range"] { flex:1; accent-color:#ff6b00; cursor:pointer; min-width:120px; }
+  .year-filter input[type="date"] { background:#0a0a0a; border:1px solid #ff6b00; color:#00ffff; padding:5px 8px; font-family:inherit; }
+  .year-filter .year-label { color:#ff6b00; font-weight:bold; min-width:50px; text-align:center; }
 
-        .stat-value {
-            font-size: 2.5em;
-            color: #ff6b00;
-            text-shadow: 0 0 10px #ff6b00;
-        }
+  .top10-table { width:100%; border-collapse:collapse; font-size:.85em; margin-top:10px; }
+  .top10-table th { background:#111; color:#00ffff; padding:8px; text-align:left; border-bottom:1px solid #ff6b00; }
+  .top10-table td { padding:6px 8px; border-bottom:1px solid #222; cursor:pointer; transition:background .2s; }
+  .top10-table tr:hover td { background:#1a1a1a; color:#ff6b00; }
 
-        .stat-label {
-            color: #00ffff;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+  .maplibregl-popup { z-index: 99999 !important; }
+  .maplibregl-popup-content {
+    background: #0a0a0a !important;
+    color: #00ff00 !important;
+    border: 1px solid #ff6b00 !important;
+    box-shadow: 0 0 20px #ff6b00 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-family: 'Courier New', monospace !important;
+  }
+  .maplibregl-popup-tip { border-top-color: #ff6b00 !important; border-bottom-color: #ff6b00 !important; }
+  .maplibregl-popup-close-button { color: #ff6b00 !important; font-size: 18px !important; padding: 0 8px !important; font-weight: bold !important; }
+  .maplibregl-popup-close-button:hover { background: rgba(255,107,0,0.2) !important; }
 
-        .stat-source {
-            font-size: 0.7em;
-            color: #666;
-            margin-top: 10px;
-        }
+  body.light-mode { background: #f5f5f5; color: #1a1a1a; }
+  body.light-mode header { background: rgba(255,255,255,.95); box-shadow: 0 0 20px rgba(255,107,0,.3); }
+  body.light-mode h1, body.light-mode h2 { color: #d94d00; text-shadow: none; }
+  body.light-mode h2 { border-bottom-color: #ddd; }
+  body.light-mode .header-info { color: #007a99; }
+  body.light-mode .webcam-card, body.light-mode .stat-card,
+  body.light-mode .chart-card, body.light-mode .year-filter { background: rgba(255,255,255,.9); }
+  body.light-mode .webcam-header, body.light-mode .webcam-footer { background: #f0f0f0; color: #333; }
+  body.light-mode .webcam-name { color: #007a99; }
+  body.light-mode .stat-value { color: #d94d00; text-shadow: none; }
+  body.light-mode .stat-label { color: #007a99; }
+  body.light-mode .chart-card h3 { color: #007a99; }
+  body.light-mode .btn { border-color: #ff6b00; color: #d94d00; }
+  body.light-mode .btn:hover, body.light-mode .btn.active { background: #ff6b00; color: #fff; }
+  body.light-mode .info-box { background: rgba(0,122,153,.05); border-color: #007a99; color: #007a99; }
+  body.light-mode .warning { background: rgba(255,0,0,.05); color: #cc0000; }
+  body.light-mode footer { color: #666; border-top-color: #ddd; }
+  body.light-mode #map-epicenters { background: #f5f5f5; }
+  body.light-mode .year-filter label { color: #007a99; }
+  body.light-mode .year-filter input[type="date"] { background:#fff; color:#1a1a1a; }
+  body.light-mode .top10-table th { background:#f0f0f0; color:#007a99; }
+  body.light-mode .top10-table tr:hover td { background:#e0e0e0; }
 
-        .webcams-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin: 30px 0;
-        }
+  footer { text-align:center; padding:20px; color:#666; border-top:1px solid #333; margin-top:30px; font-size:.8em; }
+  footer a { color:#ff6b00; text-decoration:none; }
+  #theme-toggle { position:absolute; top:20px; right:20px; font-size:.85em; }
 
-        .webcam-card {
-            border: 2px solid #ff6b00;
-            background: #000;
-            overflow: hidden;
-            transition: transform 0.3s;
-        }
-
-        .webcam-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 30px #ff6b00;
-        }
-
-        .webcam-header {
-            background: #111;
-            padding: 10px;
-            border-bottom: 1px solid #ff6b00;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .webcam-name {
-            color: #00ffff;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.8em;
-        }
-
-        .live-badge {
-            background: #ff0000;
-            color: white;
-            padding: 2px 8px;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            50% { opacity: 0.5; }
-        }
-
-        .webcam-frame {
-            width: 100%;
-            height: 160px;
-            background: #000;
-            position: relative;
-        }
-
-        .webcam-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .webcam-time {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            background: rgba(0,0,0,0.8);
-            color: #00ffff;
-            padding: 2px 6px;
-            font-size: 0.7em;
-            border: 1px solid #00ffff;
-        }
-
-        .webcam-footer {
-            background: #111;
-            padding: 8px;
-            border-top: 1px solid #ff6b00;
-            color: #ff6b00;
-            font-size: 0.7em;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .chart-card {
-            border: 1px solid #ff6b00;
-            padding: 20px;
-            background: rgba(0,0,0,0.8);
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            color: #00ffff;
-        }
-
-        .chart-container {
-            height: 250px;
-            width: 100%;
-        }
-
-        .earthquake-list {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .earthquake-item {
-            border-bottom: 1px solid #333;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9em;
-        }
-
-        .earthquake-item:hover {
-            background: #111;
-        }
-
-        .earthquake-magnitude {
-            color: #ff6b00;
-            font-weight: bold;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            border-top: 1px solid #333;
-            margin-top: 30px;
-        }
-
-        .data-status {
-            color: #00ff00;
-            font-size: 0.8em;
-            margin-top: 10px;
-        }
-
-        .api-docs {
-            border: 1px solid #333;
-            padding: 15px;
-            margin: 20px 0;
-            background: #111;
-        }
-
-        .api-docs h3 {
-            color: #ff6b00;
-            margin-bottom: 10px;
-        }
-
-        .api-docs a {
-            color: #ff6b00;
-            text-decoration: none;
-        }
-
-        .api-docs a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 1200px) {
-            .webcams-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 900px) {
-            .webcams-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
-            .webcams-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: 1fr; }
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  @media (max-width:1400px) { .webcams-grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:1000px) {
+    .webcams-grid { grid-template-columns:1fr; }
+    .charts-grid { grid-template-columns:1fr; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:600px) {
+    .stats-grid { grid-template-columns:1fr; }
+    h1 { font-size:1.4em; }
+    #theme-toggle { position:static; margin-top:10px; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌋 PITON DE LA FOURNAISE - DONNÉES RÉELLES IPGP</h1>
-            <div class="header-info">
-                <span>📍 RÉSEAU OVPF (code PF)</span>
-                <span>⏱️ <span id="current-time"></span></span>
-                <span>📡 SOURCE: <span id="data-source">datacenter.ipgp.fr</span></span>
-                <span>🟢 <span id="data-status">CONNEXION API</span></span>
-            </div>
-        </div>
-
-        <!-- Stats avec données réelles -->
-        <div class="stats-grid" id="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label"><span>📊</span> SISMICITÉ</div>
-                <div class="stat-value" id="sismo-value">---</div>
-                <div class="stat-unit">Hz</div>
-                <div class="stat-source" id="sismo-source">Station: PF RER</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label"><span>🌋</span> DERNIER SÉISME</div>
-                <div class="stat-value" id="last-eq-mag">---</div>
-                <div class="stat-unit" id="last-eq-time">---</div>
-                <div class="stat-source" id="last-eq-source">FDSN Event</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label"><span>📈</span> DÉFORMATION</div>
-                <div class="stat-value" id="gps-value">---</div>
-                <div class="stat-unit">cm</div>
-                <div class="stat-source" id="gps-source">Station: PF GPS</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label"><span>🌡️</span> TEMP. SOL</div>
-                <div class="stat-value" id="temp-value">---</div>
-                <div class="stat-unit">°C</div>
-                <div class="stat-source" id="temp-source">Station: PF BOR</div>
-            </div>
-        </div>
-
-        <!-- Webcams -->
-        <h2 style="color: #ff6b00; margin: 20px 0;">📹 RÉSEAU DE SURVEILLANCE - 11 CAMÉRAS</h2>
-        <div class="webcams-grid" id="webcams-grid"></div>
-
-        <!-- Graphiques -->
-        <h2 style="color: #ff6b00; margin: 20px 0;">📊 DONNÉES SISMIQUES TEMPS RÉEL</h2>
-        <div class="charts-grid">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <span>SISMOGRAMME - STATION PF RER</span>
-                    <span class="live-badge">EN DIRECT</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="sismoChart"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <div class="chart-header">
-                    <span>SPECTRE FRÉQUENCES</span>
-                    <span class="live-badge">FFT</span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="spectrumChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Séismes récents -->
-        <div style="border:1px solid #ff6b00; padding:20px; margin:30px 0;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <h2 style="color: #ff6b00;">📋 SÉISMES RÉCENTS (FDSN)</h2>
-                <button onclick="fetchRealEarthquakes()" style="background:transparent; border:1px solid #ff6b00; color:#ff6b00; padding:5px 15px; cursor:pointer;">ACTUALISER</button>
-            </div>
-            <div id="earthquake-list" class="earthquake-list">
-                <div style="text-align:center; color:#666;">Chargement...</div>
-            </div>
-        </div>
-
-        <!-- Documentation API -->
-        <div class="api-docs">
-            <h3>🔌 API IPGP - Documentation</h3>
-            <p>
-                • FDSN Events: <a href="http://ws.ipgp.fr/fdsnws/event/1/query?network=PF&format=text&limit=10" target="_blank">ws.ipgp.fr/fdsnws/event</a><br>
-                • SeedLink: <code>rtserver.ipgp.fr:18000</code><br>
-                • Réseau: <strong>PF</strong> (Piton de la Fournaise)<br>
-                • Stations: RER, BOR, DSO, PDE, PBR, CSR, FJS, PCR, SNT, TPT, ULT<br>
-                • Documentation: <a href="http://volobsis.ipgp.fr" target="_blank">volobsis.ipgp.fr</a>
-            </p>
-        </div>
-
-        <div class="footer">
-            OBSERVATOIRE VOLCANOLOGIQUE DU PITON DE LA FOURNAISE - IPGP<br>
-            DONNÉES FOURNIES PAR LE CENTRE DE DONNÉES IPGP<br>
-            <span id="update-time"></span>
-        </div>
+<div class="container">
+  <header>
+    <button class="btn" id="theme-toggle">☀️ Mode clair</button>
+    <h1>🌋 PITON DE LA FOURNAISE — 2013-2026</h1>
+    <div class="header-info">
+      <span>📍 Réseau OVPF-IPGP</span>
+      <span>⏱️ <span id="current-time">--:--:--</span></span>
+      <span>📊 <span id="total-inline">--</span> événements</span>
+      <span>📅 <span id="period-inline">--</span></span>
     </div>
+  </header>
 
-    <script>
-        // Configuration des webcams
-        const WEBCAMS = [
-            { name: "HUBERT DELISLE", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraHDLC.jpg", loc: "Vue panoramique" },
-            { name: "PITON DE BERT", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBert.jpg", loc: "Flanc sud-est" },
-            { name: "DOLOMIEU", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraDolomieu.jpg", loc: "Cratère sommitale" },
-            { name: "CASCADES", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraCascades.jpg", loc: "Cascades" },
-            { name: "CRATÈRE FONTAINE", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraCFNC.jpg", loc: "Cratère Fontaine" },
-            { name: "BORY", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBory.jpg", loc: "Cratère Bory" },
-            { name: "DOLOMIEU EST", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraDOEC.jpg", loc: "Dolomieu Est" },
-            { name: "PLAINES", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraPlaines.jpg", loc: "Plaine des Cafres" },
-            { name: "FOUQUET", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraFouquet.jpg", loc: "Dos d'Âne" },
-            { name: "MAÏDO", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraMaido.jpg", loc: "Maïdo" },
-            { name: "CHISNY", url: "https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraChisny.jpg", loc: "Piton Chisny" }
-        ];
+  <h2>📹 WEBCAMS EN DIRECT</h2>
+  <div class="controls">
+    <button class="btn" id="refresh-cams">🔄 Actualiser</button>
+    <button class="btn" id="auto-cams">▶️ Activer auto (5 min)</button>
+    <div class="refresh-info">
+      <span id="auto-status">Auto : désactivé (cliquez sur 🔄 pour mettre à jour)</span>
+    </div>
+  </div>
+  <div class="webcams-grid" id="webcams-grid"></div>
 
-        let charts = {};
-        let historicalData = [];
+  <h2>📊 STATISTIQUES 2013-2026</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">📊 TOTAL ÉVÉNEMENTS</div>
+      <div class="stat-value" id="total">---</div>
+      <div class="stat-source">Catalogue FDSN OVPF</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">🌋 VT SOMMITAUX</div>
+      <div class="stat-value" id="vt">---</div>
+      <div class="stat-source">Enclos Fouqué, prof. &lt; 4 km</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">📈 MAGNITUDE MAX</div>
+      <div class="stat-value" id="magmax">---</div>
+      <div class="stat-source">Séisme régional</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">⬇️ PROFONDEUR MAX</div>
+      <div class="stat-value" id="depthmax">---</div>
+      <div class="stat-source">Zone océanique</div>
+    </div>
+  </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initDateTime();
-            loadWebcams();
-            initCharts();
-            
-            // Charger les données réelles
-            fetchRealTimeData();
-            fetchRealEarthquakes();
-            
-            // Mise à jour périodique
-            setInterval(() => {
-                refreshWebcams();
-                fetchRealTimeData();
-                updateCharts();
-            }, 10000);
-            
-            setInterval(fetchRealEarthquakes, 300000);
-        });
+  <div class="info-box">
+    ✅ <strong>Catalogue complet pré-chargé</strong> — <span id="total-info">3 017</span> événements de
+    <span id="date-min">---</span> à <span id="date-max">---</span>.
+    <br>💡 <strong>Cliquez sur un point</strong> pour les détails. <strong>Shift + glisser</strong> sur la carte pour sélectionner une zone.
+    <br>📹 <strong>Webcams</strong> : cliquez sur 🔄 pour actualiser manuellement (auto désactivé pour économiser la bande passante).
+  </div>
 
-        function initDateTime() {
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
+  <div class="warning">
+    ⚠️ Le catalogue FDSN ne contient que les événements <strong>localisés manuellement</strong>.
+    Les bulletins mensuels OVPF rapportent 8 à 10× plus de séismes.
+  </div>
+
+  <h2>📈 ANALYSE TEMPORELLE</h2>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Événements par année (VT vs Régionaux)</h3>
+      <div class="chart-container"><canvas id="chart-year"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Distribution des magnitudes (cliquez sur une barre)</h3>
+      <div class="chart-container"><canvas id="chart-mag"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Distribution des profondeurs (cliquez sur une barre)</h3>
+      <div class="chart-container"><canvas id="chart-depth"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Répartition VT / Régionaux</h3>
+      <div class="chart-container"><canvas id="chart-pie"></canvas></div>
+    </div>
+  </div>
+
+  <h2>🗺️ CARTE 3D DES ÉPICENTRES</h2>
+
+  <div class="year-filter controls">
+    <label>📅 De</label>
+    <input type="range" id="year-min" min="2013" max="2026" value="2013" step="1">
+    <span class="year-label" id="year-min-label">2013</span>
+    <label>à</label>
+    <input type="range" id="year-max" min="2013" max="2026" value="2026" step="1">
+    <span class="year-label" id="year-max-label">2026</span>
+    <button class="btn" id="reset-year">↺ Reset</button>
+    <span class="refresh-info">Plage : <span id="year-range-count">--</span></span>
+  </div>
+
+  <div class="year-filter controls">
+    <label>📊 Magnitude ≥</label>
+    <input type="range" id="mag-min" min="-1" max="5" value="-1" step="0.1">
+    <span class="year-label" id="mag-min-label">-1.0</span>
+    <label>≤</label>
+    <input type="range" id="mag-max" min="-1" max="5" value="5" step="0.1">
+    <span class="year-label" id="mag-max-label">5.0</span>
+    <button class="btn" id="reset-mag">↺ Reset</button>
+  </div>
+
+  <div class="year-filter controls">
+    <label>⬇️ Profondeur ≥</label>
+    <input type="range" id="depth-min" min="0" max="60" value="0" step="1">
+    <span class="year-label" id="depth-min-label">0</span>
+    <label>≤</label>
+    <input type="range" id="depth-max" min="0" max="60" value="60" step="1">
+    <span class="year-label" id="depth-max-label">60</span>
+    <label>km</label>
+    <button class="btn" id="reset-depth">↺ Reset</button>
+  </div>
+
+  <div class="year-filter controls">
+    <label>🎯 Aller à</label>
+    <input type="date" id="date-picker" min="2013-03-24" max="2026-10-08">
+    <button class="btn" id="goto-date">▶ Centrer</button>
+    <button class="btn" id="play-timeline">▶ Lire timeline</button>
+    <button class="btn" id="heatmap-toggle">🔥 Heatmap</button>
+    <button class="btn" id="reset-all">🔄 Reset tout</button>
+  </div>
+
+  <div class="controls">
+    <button class="btn active" id="filter-all">Tous</button>
+    <button class="btn" id="filter-vt">VT sommitaux</button>
+    <button class="btn" id="filter-reg">Régionaux</button>
+    <button class="btn" id="filter-strong">Md ≥ 1.5</button>
+    <button class="btn" id="export-csv">📥 Export CSV</button>
+    <div class="refresh-info"><span id="map-count">--</span> événements</div>
+  </div>
+  <div id="map-epicenters"></div>
+
+  <div class="chart-card" style="margin-top:20px;">
+    <h3>🔝 Top 10 séismes (magnitude) — cliquez pour centrer</h3>
+    <table class="top10-table" id="top10-table">
+      <thead>
+        <tr><th>Date</th><th>Magnitude</th><th>Profondeur</th><th>Latitude</th><th>Longitude</th><th>Type</th></tr>
+      </thead>
+      <tbody id="top10-body"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    OBSERVATOIRE VOLCANOLOGIQUE DU PITON DE LA FOURNAISE — IPGP<br>
+    Données : <a href="http://ws.ipgp.fr/fdsnws/event/1" target="_blank">ws.ipgp.fr</a> |
+    Webcams : <a href="https://www.ipgp.fr/volcanoweb/reunion/" target="_blank">ipgp.fr</a><br>
+    Fond de carte 3D : OpenStreetMap + AWS Terrain (sans clé API) |
+    Dernière mise à jour : <span id="update-time">--:--:--</span>
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// ÉTAT GLOBAL
+// ============================================================
+var state = {
+  autoRefresh: false,
+  countdown: 300,
+  interval: 300,
+  timerId: null,
+  countdownId: null
+};
+var map = null;
+var allEvents = [];
+var mapReady = false;
+var currentFilter = 'all';
+var currentYearMin = 2013;
+var currentYearMax = 2026;
+var currentMagMin = -1;
+var currentMagMax = 5;
+var currentDepthMin = 0;
+var currentDepthMax = 60;
+var heatmapEnabled = false;
+var timelinePlaying = false;
+var timelineInterval = null;
+var magChartInstance = null;
+var depthChartInstance = null;
+
+// ============================================================
+// WEBCAMS — 9 officielles IPGP
+// ============================================================
+var WEBCAMS = [
+  { name:'HUBERT DELISLE',   file:'CameraHDLC.jpg',     loc:'Panoramique' },
+  { name:'PITON DE BERT',    file:'CameraBERT3.jpg',    loc:'Flanc SE' },
+  { name:'CASCADES',         file:'CameraCascades.jpg', loc:'Cascades' },
+  { name:'CRATERE FONTAINE', file:'CameraCFNC.jpg',     loc:'Fontaine' },
+  { name:'BORY',             file:'CameraBory.jpg',     loc:'Bory' },
+  { name:'DOLOMIEU EST',     file:'CameraDOEC.jpg',     loc:'Dolomieu E' },
+  { name:'BASALTE',          file:'CameraBasalte.jpg',  loc:'Grandes Pentes' },
+  { name:'PARC',             file:'CameraPARC.jpg',     loc:'Parc' },
+  { name:'ENCLOS',           file:'CameraENCC.jpg',     loc:'Enclos Fouqué' }
+];
+
+// ✅ Version statique : accès direct à IPGP sans proxy
+function getCamUrl(file, t) {
+  return 'https://www.ipgp.fr/volcanoweb/reunion/Cameras/' + file + '?t=' + t;
+}
+
+function nowStr() {
+  var d = new Date();
+  var p = function(n) { return n.toString().padStart(2,'0'); };
+  return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+
+function renderWebcams() {
+  var grid = document.getElementById('webcams-grid');
+  var ts = Date.now();
+  var html = '';
+  for (var i = 0; i < WEBCAMS.length; i++) {
+    var cam = WEBCAMS[i];
+    html += '<div class="webcam-card">';
+    html += '<div class="webcam-header"><span class="webcam-name">📌 ' + cam.name + '</span><span class="live-badge">LIVE</span></div>';
+    html += '<div class="webcam-frame" id="frame-' + i + '">';
+    html += '<img id="img-' + i + '" src="' + getCamUrl(cam.file, ts) + '" class="loading" alt="' + cam.name + '" loading="lazy" crossorigin="anonymous">';
+    html += '<div class="error-overlay">';
+    html += '<div style="font-size:2em;">📷</div>';
+    html += '<div>Caméra indisponible</div>';
+    html += '<a class="fallback-link" href="https://www.ipgp.fr/volcanoweb/reunion/" target="_blank">Voir sur ipgp.fr</a>';
+    html += '</div>';
+    html += '<div class="webcam-time" id="time-' + i + '">' + nowStr() + '</div>';
+    html += '</div>';
+    html += '<div class="webcam-footer"><span>📍 ' + cam.loc + '</span></div>';
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+
+  WEBCAMS.forEach(function(cam, i) {
+    var img = document.getElementById('img-' + i);
+    var frame = document.getElementById('frame-' + i);
+    if (img && frame) {
+      img.addEventListener('load', function() {
+        img.classList.remove('loading');
+        frame.classList.remove('has-error');
+      });
+      img.addEventListener('error', function() {
+        frame.classList.add('has-error');
+      });
+    }
+  });
+}
+
+function refreshWebcams() {
+  var ts = Date.now();
+  WEBCAMS.forEach(function(cam, i) {
+    var img = document.getElementById('img-' + i);
+    var time = document.getElementById('time-' + i);
+    if (img) { img.classList.add('loading'); img.src = getCamUrl(cam.file, ts); }
+    if (time) time.textContent = nowStr();
+  });
+  state.countdown = state.interval;
+}
+
+function startAuto() {
+  stopAuto();
+  state.timerId = setInterval(refreshWebcams, state.interval * 1000);
+  document.getElementById('auto-cams').textContent = '⏸️ Désactiver auto';
+  document.getElementById('auto-cams').classList.add('active');
+  document.getElementById('auto-status').textContent = 'Auto : ACTIF (refresh toutes les 5 min)';
+}
+
+function stopAuto() {
+  if (state.timerId) clearInterval(state.timerId);
+  document.getElementById('auto-cams').textContent = '▶️ Activer auto (5 min)';
+  document.getElementById('auto-cams').classList.remove('active');
+  document.getElementById('auto-status').textContent = 'Auto : désactivé (cliquez sur 🔄 pour mettre à jour)';
+}
+
+// ============================================================
+// CARTE 3D MAPLIBRE
+// ============================================================
+function initMap() {
+  map = new maplibregl.Map({
+    container: 'map-epicenters',
+    style: {
+      version: 8,
+      glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          maxzoom: 19,
+          attribution: '© OpenStreetMap contributors'
         }
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+    },
+    center: [55.55, -21.15],
+    zoom: 10,
+    pitch: 60,
+    bearing: -15,
+    maxPitch: 85
+  });
 
-        function updateDateTime() {
-            const now = moment();
-            document.getElementById('current-time').textContent = now.format('DD/MM/YYYY HH:mm:ss');
-            document.getElementById('update-time').textContent = `Dernière mise à jour: ${now.format('HH:mm:ss')}`;
+  map.addControl(new maplibregl.NavigationControl(), 'top-left');
+
+  map.on('style.load', function() {
+    console.log('🗺️ Carte prête');
+    mapReady = true;
+
+    map.addSource('events', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50
+    });
+
+    map.addLayer({
+      id: 'events-heat',
+      type: 'heatmap',
+      source: 'events',
+      layout: { visibility: 'none' },
+      paint: {
+        'heatmap-weight': ['interpolate', ['linear'], ['get', 'mag'], 0, 0, 4, 1],
+        'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 14, 3],
+        'heatmap-color': [
+          'interpolate', ['linear'], ['heatmap-density'],
+          0, 'rgba(0,0,0,0)',
+          0.2, '#0000ff',
+          0.4, '#00ffff',
+          0.6, '#00ff00',
+          0.8, '#ffff00',
+          1, '#ff0000'
+        ],
+        'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 14, 30],
+        'heatmap-opacity': 0.8
+      }
+    });
+
+    map.addLayer({
+      id: 'clusters',
+      type: 'circle',
+      source: 'events',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': [
+          'step', ['get', 'point_count'],
+          '#ffcc00', 10,
+          '#ff9900', 100,
+          '#ff6b00', 500,
+          '#ff3300'
+        ],
+        'circle-radius': [
+          'step', ['get', 'point_count'],
+          15, 10,
+          20, 100,
+          25, 500,
+          30
+        ],
+        'circle-opacity': 0.85,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#0a0a0a'
+      }
+    });
+
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'events',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-size': 13
+      },
+      paint: { 'text-color': '#0a0a0a' }
+    });
+
+    map.addLayer({
+      id: 'events-layer',
+      type: 'circle',
+      source: 'events',
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-radius': [
+          'interpolate', ['linear'], ['get', 'depth'],
+          0, 4,
+          10, 8,
+          30, 12,
+          60, 16
+        ],
+        'circle-color': [
+          'case',
+          ['all', ['==', ['get', 'category'], 'VT'], ['<', ['get', 'depth'], 4]], '#ff6b00',
+          ['all', ['==', ['get', 'category'], 'VT'], ['>=', ['get', 'depth'], 4]], '#ff3300',
+          ['<', ['get', 'dist'], 20], '#00ffff',
+          '#0066ff'
+        ],
+        'circle-opacity': 0.7,
+        'circle-stroke-width': 1,
+        'circle-stroke-color': '#000'
+      }
+    });
+
+    map.addSource('terrainSource', {
+      type: 'raster-dem',
+      tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      encoding: 'terrarium',
+      maxzoom: 15
+    });
+    map.setTerrain({ source: 'terrainSource', exaggeration: 1.5 });
+    map.addLayer({
+      id: 'hillshade',
+      type: 'hillshade',
+      source: 'terrainSource',
+      paint: { 'hillshade-exaggeration': 0.4 }
+    });
+    map.setFog({
+      'range': [0.8, 8],
+      'color': '#0a0a0a',
+      'horizon-blend': 0.2
+    });
+
+    new maplibregl.Marker({ color: '#ff6b00' })
+      .setLngLat([55.7080, -21.2445])
+      .setPopup(new maplibregl.Popup().setHTML('<b>Piton de la Fournaise</b><br>Sommet (2632 m)'))
+      .addTo(map);
+
+    setupRectSelection();
+
+    if (allEvents.length > 0) {
+      console.log('📍 Carte prête, affichage des ' + allEvents.length + ' événements');
+      renderMarkers(allEvents);
+    }
+  });
+}
+
+function renderMarkers(data) {
+  if (!mapReady || !map) return false;
+  var source = map.getSource('events');
+  if (!source) return false;
+
+  var features = data.map(function(e) {
+    return {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [e.lon, e.lat] },
+      properties: {
+        date: e.date,
+        mag: e.mag,
+        depth: e.depth,
+        lat: e.lat,
+        lon: e.lon,
+        category: e.category,
+        dist: e.dist || 0
+      }
+    };
+  });
+
+  source.setData({ type: 'FeatureCollection', features: features });
+  document.getElementById('map-count').textContent = data.length;
+  return true;
+}
+
+function applyAllFilters() {
+  var filtered = allEvents.filter(function(e) {
+    if (currentFilter === 'vt' && e.category !== 'VT') return false;
+    if (currentFilter === 'reg' && e.category !== 'REG') return false;
+    if (currentFilter === 'strong' && e.mag < 1.5) return false;
+    var y = parseInt(e.date.substring(0, 4), 10);
+    if (y < currentYearMin || y > currentYearMax) return false;
+    if (e.mag < currentMagMin || e.mag > currentMagMax) return false;
+    if (e.depth < currentDepthMin || e.depth > currentDepthMax) return false;
+    return true;
+  });
+  renderMarkers(filtered);
+  return filtered;
+}
+
+function filterMap(type) {
+  currentFilter = type;
+  applyAllFilters();
+  ['all','vt','reg','strong'].forEach(function(t) {
+    document.getElementById('filter-' + t).classList.remove('active');
+  });
+  document.getElementById('filter-' + type).classList.add('active');
+}
+
+// ✅ Version statique : charge catalogue.json
+async function fetchCatalogue() {
+  var res = await fetch('catalogue.json');
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
+}
+
+function computeStats(events, prefilled) {
+  if (prefilled) {
+    document.getElementById('total').textContent = prefilled.total;
+    document.getElementById('vt').textContent = prefilled.vt;
+    document.getElementById('magmax').textContent = prefilled.magMax.toFixed(2);
+    document.getElementById('depthmax').textContent = prefilled.depthMax.toFixed(1);
+    document.getElementById('total-inline').textContent = prefilled.total;
+    document.getElementById('total-info').textContent = prefilled.total;
+    document.getElementById('period-inline').textContent = prefilled.dateMin + ' → ' + prefilled.dateMax;
+    document.getElementById('date-min').textContent = prefilled.dateMin;
+    document.getElementById('date-max').textContent = prefilled.dateMax;
+    return;
+  }
+  var total = events.length;
+  var vt = events.filter(function(e) { return e.category === 'VT'; }).length;
+  document.getElementById('total').textContent = total;
+  document.getElementById('vt').textContent = vt;
+  document.getElementById('magmax').textContent = Math.max.apply(null, events.map(function(e) { return e.mag; }).concat([0])).toFixed(2);
+  document.getElementById('depthmax').textContent = Math.max.apply(null, events.map(function(e) { return e.depth; }).concat([0])).toFixed(1);
+}
+
+function renderCharts(events, stats) {
+  var yearMap = (stats && stats.yearly) ? stats.yearly : null;
+  if (!yearMap) {
+    yearMap = {};
+    events.forEach(function(e) {
+      var y = e.date.substring(0, 4);
+      if (!yearMap[y]) yearMap[y] = { VT: 0, REG: 0 };
+      yearMap[y][e.category]++;
+    });
+  }
+  var years = Object.keys(yearMap).sort();
+
+  var magBins = (stats && stats.magBins) ? stats.magBins : null;
+  if (!magBins) {
+    magBins = { 'Md<0':0, '0-0.5':0, '0.5-1':0, '1-1.5':0, '1.5-2':0, '2-3':0, '>3':0 };
+    events.forEach(function(e) {
+      var m = e.mag;
+      if (m < 0) magBins['Md<0']++;
+      else if (m < 0.5) magBins['0-0.5']++;
+      else if (m < 1) magBins['0.5-1']++;
+      else if (m < 1.5) magBins['1-1.5']++;
+      else if (m < 2) magBins['1.5-2']++;
+      else if (m < 3) magBins['2-3']++;
+      else magBins['>3']++;
+    });
+  }
+
+  var depthBins = (stats && stats.depthBins) ? stats.depthBins : null;
+  if (!depthBins) {
+    depthBins = { '<0':0, '0-1':0, '1-2':0, '2-3':0, '3-5':0, '5-10':0, '>10':0 };
+    events.forEach(function(e) {
+      var d = e.depth;
+      if (d < 0) depthBins['<0']++;
+      else if (d < 1) depthBins['0-1']++;
+      else if (d < 2) depthBins['1-2']++;
+      else if (d < 3) depthBins['2-3']++;
+      else if (d < 5) depthBins['3-5']++;
+      else if (d < 10) depthBins['5-10']++;
+      else depthBins['>10']++;
+    });
+  }
+
+  var opts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#00ffff' } } },
+    scales: {
+      x: { ticks: { color: '#888' }, grid: { color: '#222' } },
+      y: { ticks: { color: '#888' }, grid: { color: '#222' } }
+    }
+  };
+
+  new Chart(document.getElementById('chart-year'), {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'VT', data: years.map(function(y) { return yearMap[y].VT || 0; }), backgroundColor: '#ff6b00' },
+        { label: 'REG', data: years.map(function(y) { return yearMap[y].REG || 0; }), backgroundColor: '#00ffff' }
+      ]
+    },
+    options: Object.assign({}, opts, {
+      scales: {
+        x: Object.assign({ stacked: true }, opts.scales.x),
+        y: Object.assign({ stacked: true }, opts.scales.y)
+      }
+    })
+  });
+
+  magChartInstance = new Chart(document.getElementById('chart-mag'), {
+    type: 'bar',
+    data: { labels: Object.keys(magBins), datasets: [{ data: Object.values(magBins), backgroundColor: '#ff6b00', cursor: 'pointer' }] },
+    options: Object.assign({}, opts, {
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ctx.parsed.y + ' séismes (cliquez pour filtrer)'; } } } },
+      onClick: function(evt, activeEls) {
+        if (activeEls.length) {
+          var idx = activeEls[0].index;
+          var label = this.data.labels[idx];
+          filterByMagnitudeLabel(label);
         }
+      }
+    })
+  });
 
-        function loadWebcams() {
-            const grid = document.getElementById('webcams-grid');
-            const timestamp = Date.now();
-            
-            grid.innerHTML = WEBCAMS.map((cam, index) => `
-                <div class="webcam-card">
-                    <div class="webcam-header">
-                        <span class="webcam-name">📌 ${cam.name}</span>
-                        <span class="live-badge">LIVE</span>
-                    </div>
-                    <div class="webcam-frame">
-                        <img src="${cam.url}?t=${timestamp}" 
-                             alt="${cam.name}"
-                             onerror="this.onerror=null; this.src='https://placehold.co/640x360/000000/ff6b00?text=${cam.name}'">
-                        <div class="webcam-time" id="time-${index}">${moment().format('HH:mm:ss')}</div>
-                    </div>
-                    <div class="webcam-footer">📍 ${cam.loc}</div>
-                </div>
-            `).join('');
+  depthChartInstance = new Chart(document.getElementById('chart-depth'), {
+    type: 'bar',
+    data: { labels: Object.keys(depthBins), datasets: [{ data: Object.values(depthBins), backgroundColor: '#00ffff', cursor: 'pointer' }] },
+    options: Object.assign({}, opts, {
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ctx.parsed.y + ' séismes (cliquez pour filtrer)'; } } } },
+      onClick: function(evt, activeEls) {
+        if (activeEls.length) {
+          var idx = activeEls[0].index;
+          var label = this.data.labels[idx];
+          filterByDepthLabel(label);
         }
+      }
+    })
+  });
 
-        function refreshWebcams() {
-            const timestamp = Date.now();
-            document.querySelectorAll('.webcam-frame img').forEach((img, index) => {
-                const originalSrc = img.src.split('?')[0];
-                img.src = originalSrc + '?t=' + timestamp;
-                const timeElement = document.getElementById(`time-${index}`);
-                if (timeElement) timeElement.textContent = moment().format('HH:mm:ss');
-            });
-        }
+  var vtCount = events.filter(function(e) { return e.category === 'VT'; }).length;
+  new Chart(document.getElementById('chart-pie'), {
+    type: 'doughnut',
+    data: {
+      labels: ['VT sommitaux', 'Régionaux'],
+      datasets: [{
+        data: [vtCount, events.length - vtCount],
+        backgroundColor: ['#ff6b00', '#00ffff']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#00ffff' } } }
+    }
+  });
+}
 
-        // RÉCUPÉRATION DES DONNÉES RÉELLES FDSN
-        async function fetchRealTimeData() {
-            try {
-                document.getElementById('data-status').textContent = 'CHARGEMENT...';
-                
-                // Requête FDSN pour les données sismiques
-                const endTime = moment().format('YYYY-MM-DDTHH:mm:ss');
-                const startTime = moment().subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss');
-                
-                // URL pour les données de la station RER
-                const fdsnUrl = `http://ws.ipgp.fr/fdsnws/dataselect/1/query?net=PF&sta=RER&loc=--&cha=HHZ&start=${startTime}&end=${endTime}`;
-                
-                // Note: Cette requête nécessite un proxy CORS en production
-                // Pour la démonstration, on utilise des données simulées basées sur des valeurs typiques
-                
-                const sismoValue = (0.3 + Math.random() * 1.2).toFixed(2);
-                const gpsValue = (2.0 + Math.random() * 1.5).toFixed(1);
-                const tempValue = (22 + Math.random() * 5).toFixed(1);
-                
-                document.getElementById('sismo-value').textContent = sismoValue;
-                document.getElementById('gps-value').textContent = gpsValue;
-                document.getElementById('temp-value').textContent = tempValue;
-                document.getElementById('data-status').textContent = 'DONNÉES IPGP';
-                
-                // Ajouter aux données historiques
-                historicalData.push({
-                    time: moment().format('HH:mm'),
-                    sismo: sismoValue,
-                    gps: gpsValue,
-                    temp: tempValue
-                });
-                
-                if (historicalData.length > 50) historicalData.shift();
-                
-            } catch (error) {
-                console.error('Erreur:', error);
-                document.getElementById('data-status').textContent = 'ERREUR API';
-            }
-        }
+function filterByMagnitudeLabel(label) {
+  var min = -2, max = 10;
+  if (label === 'Md<0') { min = -2; max = 0; }
+  else if (label === '0-0.5') { min = 0; max = 0.5; }
+  else if (label === '0.5-1') { min = 0.5; max = 1; }
+  else if (label === '1-1.5') { min = 1; max = 1.5; }
+  else if (label === '1.5-2') { min = 1.5; max = 2; }
+  else if (label === '2-3') { min = 2; max = 3; }
+  else if (label === '>3') { min = 3; max = 10; }
+  currentMagMin = min;
+  currentMagMax = max;
+  document.getElementById('mag-min').value = min;
+  document.getElementById('mag-max').value = max;
+  document.getElementById('mag-min-label').textContent = min;
+  document.getElementById('mag-max-label').textContent = max;
+  applyAllFilters();
+}
 
-        // RÉCUPÉRATION DES SÉISMES VALIDÉS
-        async function fetchRealEarthquakes() {
-            try {
-                document.getElementById('earthquake-list').innerHTML = '<div style="text-align:center;">Chargement FDSN...</div>';
-                
-                const endDate = moment().format('YYYY-MM-DD');
-                const startDate = moment().subtract(2, 'days').format('YYYY-MM-DD');
-                
-                // Requête FDSN pour les événements du réseau PF
-                const eventUrl = `https://ws.ipgp.fr/fdsnws/event/1/query?network=PF&start=${startDate}&end=${endDate}&format=text&limit=20`;
-                
-                // Simulé pour l'exemple - en production, utiliser fetch avec proxy CORS
-                const earthquakes = [
-                    { time: moment().subtract(25, 'minutes').format('HH:mm'), mag: '1.2', loc: 'Piton de la Fournaise', type: 'Volcano-tectonic' },
-                    { time: moment().subtract(1.5, 'hours').format('HH:mm'), mag: '0.8', loc: 'Dolomieu', type: 'Long-period' },
-                    { time: moment().subtract(3, 'hours').format('HH:mm'), mag: '1.5', loc: 'Bory', type: 'Volcano-tectonic' },
-                    { time: moment().subtract(5, 'hours').format('HH:mm'), mag: '0.6', loc: 'Enclos Fouqué', type: 'Hybrid' },
-                    { time: moment().subtract(8, 'hours').format('HH:mm'), mag: '2.1', loc: 'Cratère Central', type: 'Volcano-tectonic' },
-                    { time: moment().subtract(12, 'hours').format('HH:mm'), mag: '0.9', loc: 'Plaine des Sables', type: 'Long-period' },
-                    { time: moment().subtract(18, 'hours').format('HH:mm'), mag: '1.8', loc: 'Rivière de l\'Est', type: 'Volcano-tectonic' },
-                    { time: moment().subtract(23, 'hours').format('HH:mm'), mag: '0.7', loc: 'Pas de Bellecombe', type: 'Hybrid' },
-                ];
-                
-                displayEarthquakes(earthquakes);
-                
-                // Mettre à jour le dernier séisme
-                if (earthquakes.length > 0) {
-                    document.getElementById('last-eq-mag').textContent = earthquakes[0].mag;
-                    document.getElementById('last-eq-time').textContent = earthquakes[0].time;
-                }
-                
-            } catch (error) {
-                console.error('Erreur chargement séismes:', error);
-                document.getElementById('earthquake-list').innerHTML = '<div style="color:#ff0000;">Erreur de chargement FDSN</div>';
-            }
-        }
+function filterByDepthLabel(label) {
+  var min = -100, max = 200;
+  if (label === '<0') { min = -100; max = 0; }
+  else if (label === '0-1') { min = 0; max = 1; }
+  else if (label === '1-2') { min = 1; max = 2; }
+  else if (label === '2-3') { min = 2; max = 3; }
+  else if (label === '3-5') { min = 3; max = 5; }
+  else if (label === '5-10') { min = 5; max = 10; }
+  else if (label === '>10') { min = 10; max = 200; }
+  currentDepthMin = min;
+  currentDepthMax = max;
+  document.getElementById('depth-min').value = Math.max(0, min);
+  document.getElementById('depth-max').value = Math.min(60, max);
+  document.getElementById('depth-min-label').textContent = Math.max(0, min);
+  document.getElementById('depth-max-label').textContent = Math.min(60, max);
+  applyAllFilters();
+}
 
-        function displayEarthquakes(earthquakes) {
-            const list = document.getElementById('earthquake-list');
-            list.innerHTML = earthquakes.map(eq => `
-                <div class="earthquake-item">
-                    <span style="color:#00ffff;">${eq.time}</span>
-                    <span class="earthquake-magnitude">M ${eq.mag}</span>
-                    <span style="color:#ff6b00;">${eq.loc}</span>
-                    <span style="color:#666;">${eq.type}</span>
-                </div>
-            `).join('');
-        }
+function renderTop10() {
+  var top10 = allEvents.slice().sort(function(a, b) { return b.mag - a.mag; }).slice(0, 10);
+  var tbody = document.getElementById('top10-body');
+  tbody.innerHTML = '';
+  top10.forEach(function(e, i) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + e.date + '</td>' +
+                   '<td style="color:#ff6b00;">Md ' + e.mag.toFixed(2) + '</td>' +
+                   '<td>' + e.depth.toFixed(1) + ' km</td>' +
+                   '<td>' + e.lat.toFixed(3) + '</td>' +
+                   '<td>' + e.lon.toFixed(3) + '</td>' +
+                   '<td>' + (e.category === 'VT' ? '🌋 VT' : '🌊 REG') + '</td>';
+    tr.onclick = function() { flyToEvent(e); };
+    tbody.appendChild(tr);
+  });
+}
 
-        function initCharts() {
-            const sismoCtx = document.getElementById('sismoChart').getContext('2d');
-            charts.sismo = new Chart(sismoCtx, {
-                type: 'line',
-                data: {
-                    labels: Array.from({length:50}, (_,i)=> i),
-                    datasets: [{
-                        data: Array.from({length:50}, () => 30 + Math.random() * 50),
-                        borderColor: '#ff6b00',
-                        backgroundColor: 'transparent',
-                        borderWidth: 1,
-                        tension: 0.4,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        y: { beginAtZero: true, grid: { color: '#333' } },
-                        x: { display: false }
-                    }
-                }
-            });
+function flyToEvent(e) {
+  map.flyTo({ center: [e.lon, e.lat], zoom: 15, duration: 1500 });
+  setTimeout(function() {
+    new maplibregl.Popup({ closeButton: true, closeOnClick: false })
+      .setLngLat([e.lon, e.lat])
+      .setHTML(
+        '<div style="font-family:monospace; background:#0a0a0a; color:#00ff00; padding:10px; border:1px solid #ff6b00;">' +
+        '<b style="color:#ff6b00;">📅 ' + e.date + '</b><br>' +
+        'Md ' + e.mag.toFixed(2) + ' — ' + e.depth.toFixed(1) + ' km<br>' +
+        (e.category === 'VT' ? '🌋 VT' : '🌊 Régional') +
+        '</div>')
+      .addTo(map);
+  }, 1600);
+}
 
-            const spectrumCtx = document.getElementById('spectrumChart').getContext('2d');
-            charts.spectrum = new Chart(spectrumCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['1Hz','2Hz','3Hz','4Hz','5Hz','6Hz','7Hz','8Hz','9Hz','10Hz'],
-                    datasets: [{
-                        data: Array.from({length:10}, () => 20 + Math.random() * 60),
-                        backgroundColor: '#ff6b00',
-                        borderRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        y: { beginAtZero: true, grid: { color: '#333' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
+function toggleTimeline() {
+  if (timelinePlaying) {
+    clearInterval(timelineInterval);
+    timelinePlaying = false;
+    document.getElementById('play-timeline').textContent = '▶ Lire timeline';
+    document.getElementById('play-timeline').classList.remove('active');
+    return;
+  }
+  timelinePlaying = true;
+  var y = 2013;
+  document.getElementById('play-timeline').textContent = '⏸ Stop';
+  document.getElementById('play-timeline').classList.add('active');
+  timelineInterval = setInterval(function() {
+    if (!timelinePlaying || y > 2026) {
+      clearInterval(timelineInterval);
+      timelinePlaying = false;
+      document.getElementById('play-timeline').textContent = '▶ Lire timeline';
+      document.getElementById('play-timeline').classList.remove('active');
+      return;
+    }
+    currentYearMax = y;
+    document.getElementById('year-max').value = y;
+    document.getElementById('year-max-label').textContent = y;
+    applyAllFilters();
+    y++;
+  }, 900);
+}
 
-        function updateCharts() {
-            if (charts.sismo) {
-                charts.sismo.data.datasets[0].data = Array.from({length:50}, () => 30 + Math.random() * 50);
-                charts.sismo.update('quiet');
-            }
-            if (charts.spectrum) {
-                charts.spectrum.data.datasets[0].data = Array.from({length:10}, () => 20 + Math.random() * 60);
-                charts.spectrum.update('quiet');
-            }
-        }
+function toggleHeatmap() {
+  heatmapEnabled = !heatmapEnabled;
+  if (heatmapEnabled) {
+    map.setLayoutProperty('events-heat', 'visibility', 'visible');
+    map.setLayoutProperty('clusters', 'visibility', 'none');
+    map.setLayoutProperty('cluster-count', 'visibility', 'none');
+    map.setLayoutProperty('events-layer', 'visibility', 'none');
+    document.getElementById('heatmap-toggle').classList.add('active');
+    document.getElementById('heatmap-toggle').textContent = '🔥 Heatmap ON';
+  } else {
+    map.setLayoutProperty('events-heat', 'visibility', 'none');
+    map.setLayoutProperty('clusters', 'visibility', 'visible');
+    map.setLayoutProperty('cluster-count', 'visibility', 'visible');
+    map.setLayoutProperty('events-layer', 'visibility', 'visible');
+    document.getElementById('heatmap-toggle').classList.remove('active');
+    document.getElementById('heatmap-toggle').textContent = '🔥 Heatmap';
+  }
+}
 
-        // Export CSV des données
-        window.exportCSV = function() {
-            let csv = "Temps,Sismicité (Hz),Déformation (cm),Température (°C)\n";
-            historicalData.forEach(d => {
-                csv += `${d.time},${d.sismo},${d.gps},${d.temp}\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `IPGP_${moment().format('YYYYMMDD_HHmm')}.csv`;
-            a.click();
-        };
-    </script>
+function setupRectSelection() {
+  var canvas = map.getCanvas();
+  var start = null;
+  var rect = null;
+
+  canvas.addEventListener('mousedown', function(e) {
+    if (!e.shiftKey) return;
+    e.preventDefault();
+    map.dragPan.disable();
+    var cRect = canvas.getBoundingClientRect();
+    start = { x: e.clientX - cRect.left, y: e.clientY - cRect.top };
+    var sel = document.createElement('div');
+    sel.style.cssText = 'position:absolute; border:2px dashed #ff6b00; background:rgba(255,107,0,0.2); pointer-events:none; z-index:99999;';
+    sel.id = 'selection-rect';
+    canvas.parentElement.appendChild(sel);
+    rect = sel;
+  });
+
+  canvas.addEventListener('mousemove', function(e) {
+    if (!start || !rect) return;
+    var cRect = canvas.getBoundingClientRect();
+    var curX = e.clientX - cRect.left;
+    var curY = e.clientY - cRect.top;
+    rect.style.left = Math.min(start.x, curX) + 'px';
+    rect.style.top = Math.min(start.y, curY) + 'px';
+    rect.style.width = Math.abs(curX - start.x) + 'px';
+    rect.style.height = Math.abs(curY - start.y) + 'px';
+  });
+
+  canvas.addEventListener('mouseup', function(e) {
+    if (!start || !rect) return;
+    var cRect = canvas.getBoundingClientRect();
+    var end = { x: e.clientX - cRect.left, y: e.clientY - cRect.top };
+    rect.remove();
+    map.dragPan.enable();
+    var minX = Math.min(start.x, end.x);
+    var maxX = Math.max(start.x, end.x);
+    var minY = Math.min(start.y, end.y);
+    var maxY = Math.max(start.y, end.y);
+
+    var inRect = allEvents.filter(function(evt) {
+      var p = map.project([evt.lon, evt.lat]);
+      return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY;
+    });
+    renderMarkers(inRect);
+    console.log('🎯 Rectangle : ' + inRect.length + ' séismes sélectionnés');
+    document.getElementById('map-count').textContent = inRect.length;
+    start = null;
+    rect = null;
+  });
+}
+
+// ============================================================
+// INITIALISATION
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+
+  setInterval(function() {
+    var t = nowStr();
+    document.getElementById('current-time').textContent = t;
+    document.getElementById('update-time').textContent = t;
+  }, 1000);
+
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('theme-toggle').textContent = '🌙 Mode sombre';
+  }
+  document.getElementById('theme-toggle').addEventListener('click', function() {
+    document.body.classList.toggle('light-mode');
+    var isLight = document.body.classList.contains('light-mode');
+    this.textContent = isLight ? '🌙 Mode sombre' : '☀️ Mode clair';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+
+  renderWebcams();
+
+  document.getElementById('refresh-cams').addEventListener('click', refreshWebcams);
+  document.getElementById('auto-cams').addEventListener('click', function() {
+    if (state.autoRefresh) {
+      stopAuto();
+      state.autoRefresh = false;
+    } else {
+      startAuto();
+      state.autoRefresh = true;
+    }
+  });
+
+  initMap();
+
+  map.on('click', function(e) {
+    if (!map.getLayer('events-layer')) return;
+    var features = map.queryRenderedFeatures(e.point, { layers: ['events-layer'] });
+    if (features.length === 0) return;
+
+    var p = features[0].properties;
+    var coords = features[0].geometry.coordinates.slice();
+
+    new maplibregl.Popup({ closeButton: true, closeOnClick: false, maxWidth: '300px' })
+      .setLngLat(coords)
+      .setHTML(
+        '<div style="font-family:monospace; background:#0a0a0a; color:#00ff00; padding:10px; border:1px solid #ff6b00;">' +
+        '<b style="color:#ff6b00; font-size:1.1em;">📅 ' + p.date + '</b><br>' +
+        '<hr style="border-color:#333; margin:6px 0;">' +
+        '<b style="color:#00ffff;">Magnitude :</b> Md ' + parseFloat(p.mag).toFixed(2) + '<br>' +
+        '<b style="color:#00ffff;">Profondeur :</b> ' + parseFloat(p.depth).toFixed(2) + ' km<br>' +
+        '<b style="color:#00ffff;">Latitude :</b> ' + parseFloat(p.lat).toFixed(4) + '<br>' +
+        '<b style="color:#00ffff;">Longitude :</b> ' + parseFloat(p.lon).toFixed(4) + '<br>' +
+        '<b style="color:#00ffff;">Type :</b> ' + (p.category === 'VT' ? '🌋 Volcano-tectonique' : '🌊 Régional') +
+        '</div>')
+      .addTo(map);
+  });
+
+  map.on('click', 'clusters', function(e) {
+    var features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+    if (features.length === 0) return;
+    var clusterId = features[0].properties.cluster_id;
+    map.getSource('events').getClusterExpansionZoom(clusterId, function(err, zoom) {
+      if (err) return;
+      map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+    });
+  });
+
+  ['all','vt','reg','strong'].forEach(function(t) {
+    document.getElementById('filter-' + t).addEventListener('click', function() { filterMap(t); });
+  });
+
+  var yearMin = document.getElementById('year-min');
+  var yearMax = document.getElementById('year-max');
+  function updateYearFilter() {
+    var yMin = parseInt(yearMin.value, 10);
+    var yMax = parseInt(yearMax.value, 10);
+    if (yMin > yMax) {
+      if (document.activeElement === yearMin) { yearMax.value = yMin; yMax = yMin; }
+      else { yearMin.value = yMax; yMin = yMax; }
+    }
+    currentYearMin = yMin;
+    currentYearMax = yMax;
+    document.getElementById('year-min-label').textContent = yMin;
+    document.getElementById('year-max-label').textContent = yMax;
+    var filtered = applyAllFilters();
+    document.getElementById('year-range-count').textContent = (filtered ? filtered.length : 0) + ' événements';
+  }
+  yearMin.addEventListener('input', updateYearFilter);
+  yearMax.addEventListener('input', updateYearFilter);
+  document.getElementById('reset-year').addEventListener('click', function() {
+    yearMin.value = 2013; yearMax.value = 2026; updateYearFilter();
+  });
+
+  var magMin = document.getElementById('mag-min');
+  var magMax = document.getElementById('mag-max');
+  function updateMagFilter() {
+    var mMin = parseFloat(magMin.value);
+    var mMax = parseFloat(magMax.value);
+    if (mMin > mMax) {
+      if (document.activeElement === magMin) { magMax.value = mMin; mMax = mMin; }
+      else { magMin.value = mMax; mMin = mMax; }
+    }
+    currentMagMin = mMin; currentMagMax = mMax;
+    document.getElementById('mag-min-label').textContent = mMin.toFixed(1);
+    document.getElementById('mag-max-label').textContent = mMax.toFixed(1);
+    applyAllFilters();
+  }
+  magMin.addEventListener('input', updateMagFilter);
+  magMax.addEventListener('input', updateMagFilter);
+  document.getElementById('reset-mag').addEventListener('click', function() {
+    magMin.value = -1; magMax.value = 5; updateMagFilter();
+  });
+
+  var depthMin = document.getElementById('depth-min');
+  var depthMax = document.getElementById('depth-max');
+  function updateDepthFilter() {
+    var dMin = parseFloat(depthMin.value);
+    var dMax = parseFloat(depthMax.value);
+    if (dMin > dMax) {
+      if (document.activeElement === depthMin) { depthMax.value = dMin; dMax = dMin; }
+      else { depthMin.value = dMax; dMin = dMax; }
+    }
+    currentDepthMin = dMin; currentDepthMax = dMax;
+    document.getElementById('depth-min-label').textContent = dMin;
+    document.getElementById('depth-max-label').textContent = dMax;
+    applyAllFilters();
+  }
+  depthMin.addEventListener('input', updateDepthFilter);
+  depthMax.addEventListener('input', updateDepthFilter);
+  document.getElementById('reset-depth').addEventListener('click', function() {
+    depthMin.value = 0; depthMax.value = 60; updateDepthFilter();
+  });
+
+  document.getElementById('goto-date').addEventListener('click', function() {
+    var d = document.getElementById('date-picker').value;
+    if (!d) return;
+    var found = allEvents.filter(function(e) { return e.date === d; });
+    if (found.length === 0) { alert('Aucun séisme le ' + d); return; }
+    flyToEvent(found[0]);
+  });
+
+  document.getElementById('play-timeline').addEventListener('click', toggleTimeline);
+  document.getElementById('heatmap-toggle').addEventListener('click', toggleHeatmap);
+
+  document.getElementById('reset-all').addEventListener('click', function() {
+    yearMin.value = 2013; yearMax.value = 2026;
+    magMin.value = -1; magMax.value = 5;
+    depthMin.value = 0; depthMax.value = 60;
+    currentFilter = 'all';
+    currentYearMin = 2013; currentYearMax = 2026;
+    currentMagMin = -1; currentMagMax = 5;
+    currentDepthMin = 0; currentDepthMax = 60;
+    ['all','vt','reg','strong'].forEach(function(t) {
+      document.getElementById('filter-' + t).classList.remove('active');
+    });
+    document.getElementById('filter-all').classList.add('active');
+    applyAllFilters();
+    if (heatmapEnabled) toggleHeatmap();
+    document.getElementById('year-min-label').textContent = '2013';
+    document.getElementById('year-max-label').textContent = '2026';
+    document.getElementById('mag-min-label').textContent = '-1.0';
+    document.getElementById('mag-max-label').textContent = '5.0';
+    document.getElementById('depth-min-label').textContent = '0';
+    document.getElementById('depth-max-label').textContent = '60';
+    document.getElementById('year-range-count').textContent = allEvents.length + ' événements';
+  });
+
+  document.getElementById('export-csv').addEventListener('click', function() {
+    var filtered = applyAllFilters();
+    if (!filtered || filtered.length === 0) { alert('Aucun événement à exporter'); return; }
+    var csv = 'date,magnitude,profondeur_km,latitude,longitude,categorie\n';
+    filtered.forEach(function(e) {
+      csv += [e.date, e.mag, e.depth, e.lat, e.lon, e.category].join(',') + '\n';
+    });
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'seismes_piton_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  });
+
+  // ✅ Chargement du catalogue STATIQUE (catalogue.json)
+  fetchCatalogue().then(function(data) {
+    var events = data.events || [];
+    var stats = data.stats || null;
+
+    var VOLCAN = { lat: -21.2445, lon: 55.7080 };
+    events.forEach(function(e) {
+      var dLat = (e.lat - VOLCAN.lat) * 111;
+      var dLon = (e.lon - VOLCAN.lon) * 111 * Math.cos(VOLCAN.lat * Math.PI / 180);
+      e.dist = Math.sqrt(dLat*dLat + dLon*dLon);
+    });
+
+    allEvents = events;
+    computeStats(events, stats);
+    renderCharts(events, stats);
+    renderTop10();
+
+    console.log('✅ Catalogue chargé : ' + events.length + ' événements');
+
+    var attempts = 0;
+    var tryRender = function() {
+      attempts++;
+      if (renderMarkers(events)) {
+        document.getElementById('year-range-count').textContent = events.length + ' événements';
+      } else if (attempts < 150) {
+        setTimeout(tryRender, 200);
+      }
+    };
+    tryRender();
+  }).catch(function(err) {
+    console.error('❌ Erreur catalogue:', err);
+    document.getElementById('total').textContent = 'ERR';
+    var infoBox = document.querySelector('.info-box');
+    if (infoBox) {
+      infoBox.style.borderColor = '#ff0000';
+      infoBox.style.color = '#ff6666';
+      infoBox.innerHTML = '❌ Impossible de charger <code>catalogue.json</code> : ' + err.message +
+                          '<br>💡 Vérifiez que le fichier est bien présent à la racine du dépôt.';
+    }
+  });
+});
+</script>
 </body>
 </html>
