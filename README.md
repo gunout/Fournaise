@@ -32,6 +32,13 @@ L'application combine une **carte 3D interactive**, des **graphiques statistique
 
 ---
 
+## SCREENSHOTS
+
+<img width="1665" height="3096" alt="Screenshot 2026-10-10 at 16-26-54 🌋 OVPF — Piton de la Fournaise (2013-2026)" src="https://github.com/user-attachments/assets/7a5a3164-d288-4c7e-8395-edc742894017" />
+
+
+---
+
 ## ✨ Fonctionnalités
 
 ### 🗺️ Carte 3D interactive
