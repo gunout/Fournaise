@@ -1,5 +1,6 @@
 <div align="center">
-# 🌋 OVPF — Piton de la Fournaise
+
+## 🌋 OVPF — Piton de la Fournaise
 
 **Dashboard interactif de surveillance sismique et volcanique (2013-2026)**
 
