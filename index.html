@@ -33,7 +33,6 @@
   .error-overlay { position:absolute; inset:0; display:none; flex-direction:column; justify-content:center; align-items:center; background:#111; color:#ff6b00; font-size:.8em; text-align:center; }
   .webcam-frame.has-error .error-overlay { display:flex; }
   .webcam-frame.has-error img { display:none; }
-  .webcam-frame .fallback-link { color:#00ffff; text-decoration:underline; margin-top:8px; font-size:.85em; }
 
   .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin:20px 0; }
   .stat-card { border:1px solid #ff6b00; padding:20px; background:rgba(0,0,0,.8); transition: all .3s; }
@@ -53,7 +52,6 @@
   .btn { background:transparent; border:1px solid #ff6b00; color:#ff6b00; padding:8px 16px; cursor:pointer; font-family:inherit; font-size:.85em; text-transform:uppercase; transition:all .2s; }
   .btn:hover, .btn.active { background:#ff6b00; color:#000; }
   .refresh-info { margin-left:auto; color:#00ffff; font-size:.85em; }
-  .countdown { color:#ff6b00; font-weight:bold; }
 
   #map-epicenters { height:600px; border:2px solid #ff6b00; margin:20px 0; background:#0a0a0a; position:relative; z-index:1; }
 
@@ -301,7 +299,7 @@ var magChartInstance = null;
 var depthChartInstance = null;
 
 // ============================================================
-// WEBCAMS — 9 officielles IPGP
+// ✅ WEBCAMS — 9 officielles IPGP
 // ============================================================
 var WEBCAMS = [
   { name:'HUBERT DELISLE',   file:'CameraHDLC.jpg',     loc:'Panoramique' },
@@ -315,9 +313,12 @@ var WEBCAMS = [
   { name:'ENCLOS',           file:'CameraENCC.jpg',     loc:'Enclos Fouqué' }
 ];
 
-// ✅ Version statique : accès direct à IPGP sans proxy
+// ✅ URL du Worker Cloudflare pour contourner le CORS
+var PROXY_URL = 'https://ipgp-cams.gunout.workers.dev/';
+
 function getCamUrl(file, t) {
-  return 'https://www.ipgp.fr/volcanoweb/reunion/Cameras/' + file + '?t=' + t;
+  var ipgpUrl = 'https://www.ipgp.fr/volcanoweb/reunion/Cameras/' + file;
+  return PROXY_URL + '?url=' + encodeURIComponent(ipgpUrl) + '&t=' + t;
 }
 
 function nowStr() {
@@ -335,12 +336,8 @@ function renderWebcams() {
     html += '<div class="webcam-card">';
     html += '<div class="webcam-header"><span class="webcam-name">📌 ' + cam.name + '</span><span class="live-badge">LIVE</span></div>';
     html += '<div class="webcam-frame" id="frame-' + i + '">';
-    html += '<img id="img-' + i + '" src="' + getCamUrl(cam.file, ts) + '" class="loading" alt="' + cam.name + '" loading="lazy" crossorigin="anonymous">';
-    html += '<div class="error-overlay">';
-    html += '<div style="font-size:2em;">📷</div>';
-    html += '<div>Caméra indisponible</div>';
-    html += '<a class="fallback-link" href="https://www.ipgp.fr/volcanoweb/reunion/" target="_blank">Voir sur ipgp.fr</a>';
-    html += '</div>';
+    html += '<img id="img-' + i + '" src="' + getCamUrl(cam.file, ts) + '" class="loading" alt="' + cam.name + '" loading="lazy">';
+    html += '<div class="error-overlay"><div style="font-size:2em;">📷</div><div>Caméra indisponible</div></div>';
     html += '<div class="webcam-time" id="time-' + i + '">' + nowStr() + '</div>';
     html += '</div>';
     html += '<div class="webcam-footer"><span>📍 ' + cam.loc + '</span></div>';
@@ -600,7 +597,6 @@ function filterMap(type) {
   document.getElementById('filter-' + type).classList.add('active');
 }
 
-// ✅ Version statique : charge catalogue.json
 async function fetchCatalogue() {
   var res = await fetch('catalogue.json');
   if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -912,9 +908,6 @@ function setupRectSelection() {
   });
 }
 
-// ============================================================
-// INITIALISATION
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
 
   setInterval(function() {
@@ -1100,7 +1093,6 @@ document.addEventListener('DOMContentLoaded', function() {
     URL.revokeObjectURL(url);
   });
 
-  // ✅ Chargement du catalogue STATIQUE (catalogue.json)
   fetchCatalogue().then(function(data) {
     var events = data.events || [];
     var stats = data.stats || null;
@@ -1136,8 +1128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (infoBox) {
       infoBox.style.borderColor = '#ff0000';
       infoBox.style.color = '#ff6666';
-      infoBox.innerHTML = '❌ Impossible de charger <code>catalogue.json</code> : ' + err.message +
-                          '<br>💡 Vérifiez que le fichier est bien présent à la racine du dépôt.';
+      infoBox.innerHTML = '❌ Impossible de charger <code>catalogue.json</code> : ' + err.message;
     }
   });
 });
