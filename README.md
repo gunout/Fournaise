@@ -1,3 +1,4 @@
+<div align="center">
 # 🌋 OVPF — Piton de la Fournaise
 
 **Dashboard interactif de surveillance sismique et volcanique (2013-2026)**
@@ -15,6 +16,8 @@
 [![Séismes](https://img.shields.io/badge/Séismes-3017-ff6b00)](#)
 [![Webcams](https://img.shields.io/badge/Webcams-9-00ffff)](#)
 [![Période](https://img.shields.io/badge/Période-2013--2026-00ff00)](#)
+
+</div>
 
 ---
 
@@ -196,7 +199,11 @@ Les **données sismiques** proviennent de l'**OVPF-IPGP**. Les **webcams** reste
 - ☁️ Cloudflare Workers
 
 ---
-
+<div align="center">
 ## 🌋 Réalisé par Gleaphe — 2026
 
+
 **⭐ Si ce projet vous plaît, n'hésitez pas à lui donner une étoile ! ⭐**
+</div>
+
+---
